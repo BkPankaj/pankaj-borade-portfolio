@@ -1,17 +1,17 @@
 var express = require("express")
 var bodyParser = require("body-parser")
-var mongoose = require("mongoose")
+var dotenv = require("dotenv")
 
 const app = express()
 
-app.use(bodyParser.json())
-app.use(express.static('public'))
+dotenv.config({ path: "./config.env"});
+// require('./dbf/conn');
 
-app.use(bodyParser.urlencoded({
-    extended:true
-}))
+var mongoose = require("mongoose")
+const DB = process.env.DATABASE;
 
-mongoose.connect('mongodb://127.0.0.1:27017/mydb',{
+
+mongoose.connect(DB,{
     useNewUrlParser: true,
     useUnifiedTopology:true
 });
@@ -21,8 +21,21 @@ var db = mongoose.connection;
 db.on('error',()=>console.log("Error in connecting to Databse"));
 db.once('open',()=>console.log("Connected to Database"))
 
-app.post("/",(req,res)=>{
-    var name = req.body.name;
+
+
+app.use(bodyParser.json())
+app.use(express.static('public'))
+
+app.use(bodyParser.urlencoded({
+    extended:true
+}))
+
+
+const PORT = process.env.PORT;
+
+app.post("/",async (req,res)=>{
+    try {
+        var name = req.body.name;
     var email = req.body.email;
     var ques = req.body.ques;
     var des = req.body.des;
@@ -43,12 +56,19 @@ app.post("/",(req,res)=>{
         
     });
     
+    } catch (error) {
+        res.status(400).send(error);
+    }
+    
 })
 
 app.get("/",(req,res)=>{
     res.set({
         "Allow-access-Allow-Origin": '*'
     })
-}).listen(3000);
+})
 
-console.log("Listening on PORT 3000");
+app.listen(PORT,() =>{
+    console.log('Listening on 5000');
+})
+
